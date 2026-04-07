@@ -120,7 +120,7 @@
     <main id="app-main" class="ml-72 min-h-screen transition-all duration-200">
         {{-- Navbar Component --}}
         <div id="app-navbar" class="transition-all duration-200">
-            <x-navbar />
+            <x-navbar :unreadNotifications="$unreadNotifications ?? 0" />
         </div>
 
         {{-- Page Content --}}
@@ -146,6 +146,95 @@
             document.getElementById('app-navbar').classList.remove('blur-sm', 'pointer-events-none');
             document.getElementById('app-main').classList.remove('blur-sm', 'pointer-events-none');
         }
+
+        // Live Search
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const searchResultsContent = document.getElementById('searchResultsContent');
+        let searchTimeout;
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 2) {
+                    searchResults.classList.add('hidden');
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch(`/search?q=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let html = '';
+                            let hasResults = false;
+
+                            if (data.projects && data.projects.length > 0) {
+                                hasResults = true;
+                                html += '<p class="text-xs font-bold text-outline uppercase tracking-wider mb-2">Proyek</p>';
+                                data.projects.forEach(p => {
+                                    html += `<a href="/projects/${p.id}/track" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container transition-colors mb-1">
+                                        <span class="material-symbols-outlined text-primary text-sm">handyman</span>
+                                        <div><p class="text-sm font-medium text-on-surface">${p.nama}</p>
+                                        <p class="text-xs text-on-surface-variant">${p.customer ? p.customer.nama : '-'}</p></div></a>`;
+                                });
+                            }
+
+                            if (data.products && data.products.length > 0) {
+                                hasResults = true;
+                                html += '<p class="text-xs font-bold text-outline uppercase tracking-wider mb-2 mt-3">Produk</p>';
+                                data.products.forEach(p => {
+                                    html += `<a href="/products/${p.id}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container transition-colors mb-1">
+                                        <span class="material-symbols-outlined text-primary text-sm">chair</span>
+                                        <div><p class="text-sm font-medium text-on-surface">${p.nama_produk}</p>
+                                        <p class="text-xs text-on-surface-variant">Rp ${Number(p.harga).toLocaleString('id-ID')}</p></div></a>`;
+                                });
+                            }
+
+                            if (data.customers && data.customers.length > 0) {
+                                hasResults = true;
+                                html += '<p class="text-xs font-bold text-outline uppercase tracking-wider mb-2 mt-3">Pelanggan</p>';
+                                data.customers.forEach(c => {
+                                    html += `<a href="/clients/${c.id}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container transition-colors mb-1">
+                                        <span class="material-symbols-outlined text-primary text-sm">person</span>
+                                        <div><p class="text-sm font-medium text-on-surface">${c.nama}</p>
+                                        <p class="text-xs text-on-surface-variant">${c.perusahaan || c.email || '-'}</p></div></a>`;
+                                });
+                            }
+
+                            if (data.orders && data.orders.length > 0) {
+                                hasResults = true;
+                                html += '<p class="text-xs font-bold text-outline uppercase tracking-wider mb-2 mt-3">Pesanan</p>';
+                                data.orders.forEach(o => {
+                                    html += `<a href="/sales/${o.id}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container transition-colors mb-1">
+                                        <span class="material-symbols-outlined text-primary text-sm">receipt_long</span>
+                                        <div><p class="text-sm font-medium text-on-surface">${o.nomor_faktur}</p>
+                                        <p class="text-xs text-on-surface-variant">${o.customer ? o.customer.nama : '-'}</p></div></a>`;
+                                });
+                            }
+
+                            if (!hasResults) {
+                                html = '<p class="text-sm text-on-surface-variant text-center py-4">Tidak ada hasil ditemukan.</p>';
+                            }
+
+                            searchResultsContent.innerHTML = html;
+                            searchResults.classList.remove('hidden');
+                        })
+                        .catch(() => {
+                            searchResultsContent.innerHTML = '<p class="text-sm text-error text-center py-4">Terjadi kesalahan.</p>';
+                            searchResults.classList.remove('hidden');
+                        });
+                }, 300);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!searchResults.contains(e.target) && e.target !== searchInput) {
+                    searchResults.classList.add('hidden');
+                }
+            });
+        }
     </script>
+    @stack('scripts')
 </body>
 </html>

@@ -1,105 +1,90 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExportController;
+use App\Http\Controllers\ImageController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SalesController;
+use App\Http\Controllers\ScheduleController;
 use Illuminate\Support\Facades\Route;
 
-/* |-------------------------------------------------------------------------- | Web Routes |-------------------------------------------------------------------------- | | Here is where you can register web routes for your application. These | routes are loaded by the RouteServiceProvider and all of them will | be assigned to the "web" middleware group. Make something great! | */
-
-// Dashboard (home)
-Route::get('/', function () {
-    return view('pages.dashboard', ['activePage' => 'dashboard']);
-})->name('dashboard');
-
-// Products
-Route::get('/products', function () {
-    return view('pages.products', ['activePage' => 'products']);
-})->name('products');
-
-// Sales
-Route::get('/sales', function () {
-    return view('pages.sales', ['activePage' => 'sales']);
-})->name('sales');
-
-// Customers
-Route::get('/customers', function () {
-    return view('pages.customers', ['activePage' => 'customers']);
-})->name('customers');
-
-// Analytics
-Route::get('/analytics', function () {
-    return view('pages.analytics', ['activePage' => 'analytics']);
-})->name('analytics');
-
-// Settings
-Route::get('/settings', function () {
-    return view('pages.settings', ['activePage' => 'settings']);
-})->name('settings');
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
 
 // Login
-Route::get('/login', function () {
-    return view('pages.login');
-})->name('login');
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// ===== Supporting Pages =====
+// Protected Routes
+Route::middleware(['auth'])->group(function () {
+    // Dashboard (home)
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/search', [DashboardController::class, 'search'])->name('search');
 
-// Product Detail
-Route::get('/products/create', function () {
-    return view('pages.products.create', ['activePage' => 'products']);
-})->name('products.create');
+    // Products
+    Route::get('/products', [ProductController::class, 'index'])->name('products');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+    Route::delete('/products/image/{imageId}', [ProductController::class, 'destroyImage'])->name('products.image.destroy');
+    Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
+    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{id}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
-Route::get('/products/{id}', function ($id) {
-    return view('pages.products.show', ['activePage' => 'products', 'id' => $id]);
-})->name('products.show');
+    // Sales / Orders
+    Route::get('/sales', [SalesController::class, 'index'])->name('sales');
+    Route::get('/orders/create', [SalesController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [SalesController::class, 'store'])->name('orders.store');
+    Route::get('/sales/{id}', [SalesController::class, 'show'])->name('sales.show');
+    Route::post('/sales/{id}/feedback', [SalesController::class, 'saveFeedback'])->name('sales.feedback');
+    Route::get('/orders/{id}/edit', [SalesController::class, 'edit'])->name('orders.edit');
+    Route::put('/orders/{id}', [SalesController::class, 'update'])->name('orders.update');
+    Route::delete('/orders/{id}', [SalesController::class, 'destroy'])->name('orders.destroy');
 
-Route::get('/products/{id}/edit', function ($id) {
-    return view('pages.products.edit', ['activePage' => 'products', 'id' => $id]);
-})->name('products.edit');
+    // Customers / Clients
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers');
+    Route::get('/clients/create', [CustomerController::class, 'create'])->name('clients.create');
+    Route::post('/clients', [CustomerController::class, 'store'])->name('clients.store');
+    Route::get('/clients/{id}', [CustomerController::class, 'show'])->name('clients.show');
+    Route::get('/clients/{id}/edit', [CustomerController::class, 'edit'])->name('clients.edit');
+    Route::put('/clients/{id}', [CustomerController::class, 'update'])->name('clients.update');
+    Route::delete('/clients/{id}', [CustomerController::class, 'destroy'])->name('clients.destroy');
 
-// Orders
-Route::get('/orders/create', function () {
-    return view('pages.orders.create', ['activePage' => 'sales']);
-})->name('orders.create');
+    // Export
+    Route::get('/export', [ExportController::class, 'export'])->name('export');
 
-// Projects
-Route::get('/projects/create', function () {
-    return view('pages.projects.create', ['activePage' => 'dashboard']);
-})->name('projects.create');
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
 
-Route::get('/projects/{id}/track', function ($id) {
-    return view('pages.projects.track', ['activePage' => 'dashboard', 'id' => $id]);
-})->name('projects.track');
+    // Schedule
+    Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule');
 
-// Clients
-Route::get('/clients/create', function () {
-    return view('pages.clients.create', ['activePage' => 'customers']);
-})->name('clients.create');
+    // Projects
+    Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
+    Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::get('/projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::post('/projects/{id}/feedback', [ProjectController::class, 'saveFeedback'])->name('projects.feedback');
+    Route::get('/projects/{id}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
+    Route::put('/projects/{id}', [ProjectController::class, 'update'])->name('projects.update');
+    Route::delete('/projects/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+    Route::get('/projects/{id}/track', [ProjectController::class, 'track'])->name('projects.track');
 
-Route::get('/clients/{id}/edit', function ($id) {
-    return view('pages.clients.edit', ['activePage' => 'customers', 'id' => $id]);
-})->name('clients.edit');
+    // Profile & Settings
+    Route::get('/settings', [ProfileController::class, 'settings'])->name('settings');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/settings/password', [ProfileController::class, 'updatePassword'])->name('settings.password');
 
-// ===== Tahap 3 - Supporting Pages =====
-
-// Sales Detail
-Route::get('/sales/{id}', function ($id) {
-    return view('pages.sales.show', ['activePage' => 'sales', 'id' => $id]);
-})->name('sales.show');
-
-// Profile
-Route::get('/profile', function () {
-    return view('pages.profile', ['activePage' => 'settings']);
-})->name('profile');
-
-// Client Detail
-Route::get('/clients/{id}', function ($id) {
-    return view('pages.clients.show', ['activePage' => 'customers', 'id' => $id]);
-})->name('clients.show');
-
-// Notifications
-Route::get('/notifications', function () {
-    return view('pages.notifications', ['activePage' => 'dashboard']);
-})->name('notifications');
-
-// Schedule
-Route::get('/schedule', function () {
-    return view('pages.schedule', ['activePage' => 'dashboard']);
-})->name('schedule');
+    // Cloudinary
+    Route::resource('images', ImageController::class);
+});

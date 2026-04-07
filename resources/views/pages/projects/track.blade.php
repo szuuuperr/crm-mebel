@@ -6,9 +6,9 @@
 <div class="pt-28 px-10 pb-20">
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 text-sm mb-8">
-        <a class="text-on-surface-variant hover:text-primary transition-colors font-medium" href="{{ route('dashboard') }}">Dashboard</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-medium" href="{{ route('dashboard') }}">Proyek</a>
         <span class="text-outline-variant">/</span>
-        <span class="text-primary font-bold">Pelacak Proyek</span>
+        <span class="text-primary font-bold">{{ $project->nama }}</span>
     </nav>
 
     <!-- Project Header -->

@@ -16,12 +16,16 @@
             <span class="material-symbols-outlined text-[200px]">handyman</span>
         </div>
         <div class="relative z-10 flex items-center gap-10">
-            <div class="w-36 h-36 rounded-xl overflow-hidden shadow-2xl ring-4 ring-white/20">
-                <img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRqC-TvVYpbUEvjwJqRZACZQqEg59kTR3V3VAfb6r68ZF5SWqjVVR3yEUvrmFeHMvHwYA_KnqNgK-VMvNz3LdmhiONtmLdYBYzp8Fg04q1RKymSIgNCCMGStqeuCS-bRHdVIAiU-KtdLsN9eQXD-5FXUBAZwkwENHBnWpzReC7lIT78uDuFJuAbnh8kvhCNWThvhGsYEIDjJUquQZZ_Q3LSbDxoRX1Yp1x3L-hvrEcAyqKfeuepWBdfRtvN18SSOIGc2lltzDGI8QX"/>
+            <div class="w-36 h-36 rounded-xl overflow-hidden shadow-2xl ring-4 ring-white/20 bg-primary/20 flex items-center justify-center">
+                @if($user->avatar)
+                    <img alt="Profile" class="w-full h-full object-cover" src="{{ $user->avatar }}"/>
+                @else
+                    <span class="text-white text-6xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                @endif
             </div>
             <div class="text-on-primary flex-1">
-                <h1 class="text-4xl font-extrabold font-headline tracking-tight mb-1">Elias Thorne</h1>
-                <p class="text-on-primary/70 text-lg font-medium mb-4">Lead Carpenter & Founder</p>
+                <h1 class="text-4xl font-extrabold font-headline tracking-tight mb-1">{{ $user->name }}</h1>
+                <p class="text-on-primary/70 text-lg font-medium mb-4">{{ $user->jabatan ?? 'Anggota Staff' }} • {{ ucfirst($user->role) }}</p>
                 <div class="flex flex-wrap gap-3">
                     <span class="px-4 py-1.5 bg-white/10 rounded-full text-xs font-bold flex items-center gap-2">
                         <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span> Tukang Ahli
@@ -44,13 +48,13 @@
         <div class="col-span-8 space-y-8">
             <!-- Stats -->
             <div class="grid grid-cols-4 gap-6">
-                @php $stats = [
-                    ['label'=>'Total Proyek','value'=>'142','icon'=>'handyman','color'=>'bg-primary text-on-primary'],
-                    ['label'=>'Pesanan Aktif','value'=>'8','icon'=>'pending_actions','color'=>'bg-secondary-container text-on-secondary-container'],
-                    ['label'=>'Rating Pelanggan','value'=>'4.9','icon'=>'star','color'=>'bg-primary-container text-on-primary-container'],
-                    ['label'=>'Tahun Aktif','value'=>'5+','icon'=>'workspace_premium','color'=>'bg-surface-container-high text-primary'],
+                @php $statCards = [
+                    ['label'=>'Total Proyek','value'=>$stats['Total Proyek'],'icon'=>'handyman','color'=>'bg-primary text-on-primary'],
+                    ['label'=>'Pesanan Terekam','value'=>$stats['Pesanan Terekam'],'icon'=>'pending_actions','color'=>'bg-secondary-container text-on-secondary-container'],
+                    ['label'=>'Pengguna Sejak','value'=>$user->created_at->format('Y'),'icon'=>'star','color'=>'bg-primary-container text-on-primary-container'],
+                    ['label'=>'Tahun Aktif','value'=>now()->diffInYears($user->created_at).' Tahun','icon'=>'workspace_premium','color'=>'bg-surface-container-high text-primary'],
                 ]; @endphp
-                @foreach($stats as $s)
+                @foreach($statCards as $s)
                 <div class="{{ $s['color'] }} rounded-xl p-6 relative overflow-hidden">
                     <span class="material-symbols-outlined absolute -right-2 -bottom-2 text-6xl opacity-10">{{ $s['icon'] }}</span>
                     <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">{{ $s['label'] }}</p>
@@ -124,10 +128,10 @@
                 <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
                     <h4 class="text-xs font-bold text-outline uppercase tracking-widest mb-4">Kontak</h4>
                     <div class="space-y-4">
-                        <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-[18px]">mail</span><span class="text-sm font-medium">elias@artisanalatelier.com</span></div>
-                        <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-[18px]">call</span><span class="text-sm font-medium">+1 (503) 555-0172</span></div>
-                        <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="text-sm font-medium">Portland, OR 97201</span></div>
-                        <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-[18px]">language</span><span class="text-sm font-medium">artisanalatelier.com</span></div>
+                        <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-[18px]">mail</span><span class="text-sm font-medium">{{ $user->email }}</span></div>
+                        <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-[18px]">call</span><span class="text-sm font-medium">{{ $user->telepon ?? 'Belum ada No. Telepon' }}</span></div>
+                        <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="text-sm font-medium">Kantor Web-Mebel</span></div>
+                        <div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-[18px]">language</span><span class="text-sm font-medium">webmebel.com</span></div>
                     </div>
                 </div>
                 <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">

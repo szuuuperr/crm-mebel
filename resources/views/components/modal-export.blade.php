@@ -23,6 +23,7 @@
         </div>
 
         <!-- Body -->
+        <form action="{{ route('export') }}" method="GET">
         <div class="px-8 py-6 space-y-6 overflow-y-auto max-h-[60vh]">
             <!-- Format Selection -->
             <div>
@@ -61,11 +62,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] text-on-surface-variant font-bold mb-1">Dari</label>
-                        <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary-container text-on-surface font-medium text-sm" type="date" value="2023-10-01"/>
+                        <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary-container text-on-surface font-medium text-sm" name="date_start" type="date" value="{{ date('Y-m-01') }}"/>
                     </div>
                     <div>
                         <label class="block text-[10px] text-on-surface-variant font-bold mb-1">Sampai</label>
-                        <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary-container text-on-surface font-medium text-sm" type="date" value="2023-10-31"/>
+                        <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary-container text-on-surface font-medium text-sm" name="date_end" type="date" value="{{ date('Y-m-t') }}"/>
                     </div>
                 </div>
             </div>
@@ -115,16 +116,17 @@
 
         <!-- Footer -->
         <div class="px-8 py-6 bg-surface-container-low flex justify-between items-center">
-            <p class="text-xs text-on-surface-variant"><span class="font-bold text-on-surface">128</span> data akan diekspor</p>
+            <p class="text-xs text-on-surface-variant"><span class="font-bold text-on-surface">{{ $totalExportData ?? 0 }}</span> data akan diekspor</p>
             <div class="flex gap-3">
-                <button class="px-6 py-3 border-2 border-outline-variant/30 text-on-surface-variant font-bold rounded-full hover:bg-surface-container-high transition-colors" onclick="closeModal('modal-export')">
+                <button type="button" class="px-6 py-3 border-2 border-outline-variant/30 text-on-surface-variant font-bold rounded-full hover:bg-surface-container-high transition-colors" onclick="closeModal('modal-export')">
                     Batal
                 </button>
-                <button class="px-8 py-3 bg-primary text-on-primary font-bold rounded-full shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all flex items-center gap-2">
+                <button type="submit" class="px-8 py-3 bg-primary text-on-primary font-bold rounded-full shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined text-sm">download</span>
                     Ekspor
                 </button>
             </div>
         </div>
+        </form>
     </div>
 </div>

@@ -9,7 +9,7 @@
     <div class="mb-10 flex justify-between items-end">
         <div>
             <h2 class="text-4xl font-extrabold text-primary tracking-tight">Dashboard</h2>
-            <p class="text-on-surface-variant font-medium mt-1">Kamis, 24 Oktober 2024</p>
+            <p class="text-on-surface-variant font-medium mt-1">{{ now()->translatedFormat('l, d F Y') }}</p>
         </div>
         <div class="flex gap-3">
             <button onclick="openModal('modal-export')" class="px-6 py-2 bg-secondary-container text-on-secondary-container rounded-full text-sm font-bold flex items-center gap-2">
@@ -26,30 +26,12 @@
             <div class="flex justify-between items-center mb-8">
                 <h3 class="text-xl font-bold text-primary">Kinerja Penjualan</h3>
                 <div class="flex gap-2 text-xs font-bold text-outline uppercase tracking-tighter">
-                    <span class="px-3 py-1 bg-surface-container rounded-full">Mingguan</span>
-                    <span class="px-3 py-1 text-primary border border-primary rounded-full">Bulanan</span>
+                    <button id="btnWeekly" onclick="switchChart('weekly')" class="px-3 py-1 bg-surface-container rounded-full cursor-pointer hover:bg-surface-container-high transition-colors">Mingguan</button>
+                    <button id="btnMonthly" onclick="switchChart('monthly')" class="px-3 py-1 text-primary border border-primary rounded-full cursor-pointer hover:bg-primary/5 transition-colors">Bulanan</button>
                 </div>
             </div>
-            <div class="h-64 flex items-end gap-4 px-2">
-                @php
-                    $chartData = [
-                        ['label' => 'MON', 'height' => '40%', 'value' => '12k'],
-                        ['label' => 'TUE', 'height' => '65%', 'value' => '18k'],
-                        ['label' => 'WED', 'height' => '90%', 'value' => '24k', 'highlight' => true],
-                        ['label' => 'THU', 'height' => '55%', 'value' => '15k'],
-                        ['label' => 'FRI', 'height' => '75%', 'value' => '20k'],
-                        ['label' => 'SAT', 'height' => '35%', 'value' => '10k'],
-                    ];
-                @endphp
-                @foreach($chartData as $bar)
-                <div class="flex-1 group relative">
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-primary text-on-primary text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity">{{ $bar['value'] }}</div>
-                    <div class="w-full bg-surface-container-high rounded-t-xl overflow-hidden transition-all hover:h-[{{ intval($bar['height']) + 5 }}%]" style="height: {{ $bar['height'] }}">
-                        <div class="w-full h-full bg-gradient-to-t {{ isset($bar['highlight']) ? 'from-primary to-primary-container' : 'from-primary/80 to-primary-container/40' }}"></div>
-                    </div>
-                    <p class="text-[10px] text-center mt-3 font-bold {{ isset($bar['highlight']) ? 'text-primary' : 'text-outline' }}">{{ $bar['label'] }}</p>
-                </div>
-                @endforeach
+            <div class="h-64 px-2 relative">
+                <canvas id="salesChart"></canvas>
             </div>
         </div>
 
@@ -58,7 +40,7 @@
             <div class="bg-primary text-on-primary rounded-xl p-6 flex flex-col justify-between h-1/2 shadow-lg relative overflow-hidden">
                 <div class="z-10">
                     <p class="text-primary-fixed-dim text-sm font-medium mb-1">Total Pendapatan</p>
-                    <h4 class="text-3xl font-extrabold tracking-tight">Rp 124.590.000</h4>
+                    <h4 class="text-3xl font-extrabold tracking-tight">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</h4>
                 </div>
                 <div class="flex items-center gap-2 z-10">
                     <span class="material-symbols-outlined text-green-400 text-sm">trending_up</span>
@@ -71,11 +53,11 @@
             <div class="bg-secondary-container rounded-xl p-6 flex flex-col justify-between h-1/2 shadow-sm relative overflow-hidden">
                 <div class="z-10">
                     <p class="text-on-secondary-container/60 text-sm font-medium mb-1">Proyek Aktif</p>
-                    <h4 class="text-3xl font-extrabold text-on-secondary-container tracking-tight">34 Pesanan</h4>
+                    <h4 class="text-3xl font-extrabold text-on-secondary-container tracking-tight">{{ $orderAktif }} Pesanan</h4>
                 </div>
                 <div class="flex items-center gap-2 z-10">
                     <span class="material-symbols-outlined text-on-secondary-container text-sm">pending_actions</span>
-                    <span class="text-xs font-bold text-on-secondary-container">9 mendekati deadline</span>
+                    <span class="text-xs font-bold text-on-secondary-container">{{ $nearDeadline }} mendekati deadline</span>
                 </div>
                 <div class="absolute -right-8 -bottom-8 opacity-10">
                     <span class="material-symbols-outlined text-[100px]">carpenter</span>
@@ -90,63 +72,33 @@
         <div class="col-span-8">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-primary">Proyek Berjalan</h3>
-                <a class="text-sm font-bold text-primary hover:underline" href="#">Lihat Semua</a>
+                <a class="text-sm font-bold text-primary hover:underline" href="{{ route('projects.index') }}">Lihat Semua</a>
             </div>
             <div class="space-y-4">
-                @php
-                    $projects = [
-                        [
-                            'name' => 'Custom Walnut Dining Table',
-                            'client' => 'Elizabeth Swan',
-                            'order' => '#8821',
-                            'status' => 'VARNISHING',
-                            'statusClass' => 'bg-primary/10 text-primary',
-                            'progress' => 'w-3/4',
-                            'image' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuBG7QyHUGiNALUJffjCdcNoPJMxyXq3icljT_Lrd6O0YiJixiBBMeYEh-X3DgfyZaDceQy1bXRpqksgvLv5KeG18YSg7hcs-HaigiLGo13TKHQHIr-7aof1N2lv5RcQSQ17EEaUIdLgwr2qlFSNUIY-DxjQnK17ASwCrzrW3XTSWLuEvkRmiSqq5xmYis8r-T-t1DRyWrwbaiNiBAVTAPH8HaiMFHNfLhKNOgJ-z9laZ2h3a0It5W5dxKGKv8SL8zBGmtAq3ecEnucC',
-                        ],
-                        [
-                            'name' => 'Scandinavian Oak Chair Set',
-                            'client' => 'Marcus Aurelius',
-                            'order' => '#8824',
-                            'status' => 'ASSEMBLY',
-                            'statusClass' => 'bg-secondary-container text-on-secondary-container',
-                            'progress' => 'w-1/2',
-                            'image' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuBRB-7w255M5K63wx1wYZJmgo2g-eh9VFfDKXhkt1_6LyPQ0hB2_17W9JrkErqJ4ch5pI9vQLCWWDso05gE3zw4MfCJU_FK89ktZcQKJImvcIetRfndhBUlkLuwXSJgj2zwR7nn_5ohc5HRNQ5kemTjp5e70CwxEBtUd9lp5U41lQxJQFjNjPpCoBiqryhsXnWqWYzjM2gl2mdnarYG2jxyfSUM-tlfFGUQ9_65JLPNlwtJ4u8pPwCkoDOMoT__ExuQ1EnlZqH_1R67',
-                        ],
-                        [
-                            'name' => 'Live Edge Floating Shelves',
-                            'client' => 'Sarah Jenkins',
-                            'order' => '#8829',
-                            'status' => 'Sanding',
-                            'statusClass' => 'bg-surface-container text-outline',
-                            'progress' => 'w-1/4',
-                            'image' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuCaPhpfV72j4BMFCT7R4Q8BzjgbZoAaXeKITk5TMeRWxS7Nt9UI2lMaPwVSc1f55yAJ06Ap5RSpEznfaaaAyzMW3opG0fEgiewI6dNC4IiPuRwsADS60OfVR2Kmf9OehwUqS10dhZQgVQbwPOf_L5jxnr0odvyxUSdCF-0NKffpe3roGsVQ9LHurcvXsvTGzIcl3W2NbtNJ51m4PsONf-76Z3MZxb77o9kFAR36iFKkX_yB0LJvBapbxpipjsJk83eWm1M-qjv5fQ1V',
-                        ],
-                    ];
-                @endphp
+
 
                 @foreach($projects as $project)
-                <div class="bg-surface-container-low rounded-lg p-6 flex items-center justify-between group hover:bg-surface-container-lowest transition-all duration-300">
+                <div class="bg-surface-container-low rounded-lg p-6 flex items-center justify-between group hover:bg-surface-container-lowest transition-all duration-300 block">
                     <div class="flex items-center gap-6">
-                        <div class="w-16 h-16 rounded-lg overflow-hidden bg-surface-container-high flex-shrink-0">
-                            <img alt="{{ $project['name'] }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="{{ $project['image'] }}"/>
+                        <div class="w-16 h-16 rounded-lg overflow-hidden bg-surface-container-high flex-shrink-0 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-3xl text-primary">carpenter</span>
                         </div>
                         <div>
-                            <h5 class="font-bold text-primary">{{ $project['name'] }}</h5>
-                            <p class="text-sm text-on-surface-variant font-medium">Client: {{ $project['client'] }} • Order {{ $project['order'] }}</p>
+                            <h5 class="font-bold text-primary">{{ $project->nama }}</h5>
+                            <p class="text-sm text-on-surface-variant font-medium">Client: {{ $project->customer->nama ?? '-' }}@if($project->order) • Order #{{ $project->order->nomor_faktur }}@endif</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-8">
                         <div class="text-right">
                             <p class="text-xs font-bold text-outline mb-1 uppercase tracking-wider">Status</p>
-                            <span class="px-4 py-1 {{ $project['statusClass'] }} text-[10px] font-black rounded-full">{{ $project['status'] }}</span>
+                            <span class="px-4 py-1 {{ $project->status_class }} text-[10px] font-black rounded-full">{{ $project->status_label }}</span>
                         </div>
                         <div class="w-32 h-2 bg-surface-container-high rounded-full overflow-hidden">
-                            <div class="h-full bg-primary rounded-full {{ $project['progress'] }}"></div>
+                            <div class="h-full bg-primary rounded-full" style="width: {{ $project->progress }}%"></div>
                         </div>
-                        <button class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm hover:scale-110 transition-transform">
+                        <a href="{{ route('projects.show', $project->id) }}" class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
                             <span class="material-symbols-outlined">chevron_right</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
                 @endforeach
@@ -159,58 +111,57 @@
             <div class="bg-surface-container-high rounded-xl p-8">
                 <h3 class="text-xl font-bold text-primary mb-6">Permintaan Terbaru</h3>
                 <div class="space-y-6">
-                    @php
-                        $enquiries = [
-                            ['initials' => 'JD', 'name' => 'Jonathan Doe', 'request' => 'Mahogany Armoire', 'bgClass' => 'bg-primary-container text-on-primary-container'],
-                            ['initials' => 'MK', 'name' => 'Mina Koda', 'request' => 'Modern Bed Frame', 'bgClass' => 'bg-secondary text-on-secondary'],
-                            ['initials' => 'BT', 'name' => 'Brandon T.', 'request' => 'Office Fit-out', 'bgClass' => 'bg-outline-variant text-on-surface'],
-                        ];
-                    @endphp
-                    @foreach($enquiries as $enquiry)
+                    @foreach($recentOrders as $order)
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full {{ $enquiry['bgClass'] }} flex items-center justify-center font-bold text-xs">
-                            {{ $enquiry['initials'] }}
+                        <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">
+                            {{ $order->customer->initials }}
                         </div>
                         <div>
-                            <p class="text-sm font-bold text-primary">{{ $enquiry['name'] }}</p>
-                            <p class="text-xs text-on-surface-variant">Request: {{ $enquiry['request'] }}</p>
+                            <p class="text-sm font-bold text-primary">{{ $order->customer->nama }}</p>
+                            <p class="text-xs text-on-surface-variant">{{ $order->items->first()?->product?->nama_produk ?? 'Pesanan Baru' }}</p>
                         </div>
-                        <button class="ml-auto text-primary">
+                        <a href="{{ route('sales.show', $order->id) }}" class="ml-auto text-primary">
                             <span class="material-symbols-outlined text-xl">mail</span>
-                        </button>
+                        </a>
                     </div>
                     @endforeach
                 </div>
-                <button class="w-full mt-8 py-3 border border-primary/20 rounded-full text-xs font-bold text-primary hover:bg-primary/5 transition-colors">
+                <a href="{{ route('customers') }}" class="w-full mt-8 py-3 border border-primary/20 rounded-full text-xs font-bold text-primary hover:bg-primary/5 transition-colors text-center block">
                     Kelola Semua Prospek
-                </button>
+                </a>
             </div>
 
             <!-- Material Stock Level -->
             <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
                 <h3 class="text-xl font-bold text-primary mb-4">Stok Bahan Baku</h3>
                 <div class="space-y-4">
+                    @forelse($woodTypes as $wood)
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-3">
-                            <div class="w-4 h-4 rounded-full bg-[#4a3728]"></div>
-                            <span class="text-xs font-bold text-primary">Black Walnut</span>
+                            <div class="w-4 h-4 rounded-full" style="background-color: {{ $wood->kode_warna ?: '#8B7355' }}"></div>
+                            <span class="text-xs font-bold text-primary">{{ $wood->nama }}</span>
                         </div>
-                        <span class="text-xs font-bold text-error">Stok Menipis (12m)</span>
+                        @if($wood->products_count <= 3)
+                        <span class="text-xs font-bold text-error">Stok Menipis ({{ $wood->products_count }} produk)</span>
+                        @elseif($wood->products_count <= 10)
+                        <span class="text-xs font-bold text-on-secondary-container">Stok Cukup ({{ $wood->products_count }} produk)</span>
+                        @else
+                        <span class="text-xs font-bold text-green-600">Stok Aman ({{ $wood->products_count }} produk)</span>
+                        @endif
                     </div>
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <div class="w-4 h-4 rounded-full bg-[#c19a6b]"></div>
-                            <span class="text-xs font-bold text-primary">White Oak</span>
+                    @empty
+                    <div class="text-center py-4">
+                        <p class="text-sm text-on-surface-variant">Belum ada data jenis kayu.</p>
+                    </div>
+                    @endforelse
+                    @if($lowStockProducts > 0)
+                    <div class="pt-3 border-t border-outline-variant/20">
+                        <div class="flex items-center gap-2 text-xs text-error font-bold">
+                            <span class="material-symbols-outlined text-sm">warning</span>
+                            {{ $lowStockProducts }} produk memiliki stok rendah (≤5)
                         </div>
-                        <span class="text-xs font-bold text-green-600">Stok Aman (140m)</span>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <div class="w-4 h-4 rounded-full bg-[#96694c]"></div>
-                            <span class="text-xs font-bold text-primary">Cherry Wood</span>
-                        </div>
-                        <span class="text-xs font-bold text-on-secondary-container">Stok Cukup (45m)</span>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -218,14 +169,155 @@
 </div>
 @endsection
 
-@section('fab')
-<a class="fixed bottom-10 right-10 w-16 h-16 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50 group" href="{{ route('orders.create') }}">
-    <span class="material-symbols-outlined text-3xl">add</span>
-    <div class="absolute right-20 bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-        Buat Pesanan
-    </div>
-</a>
-@endsection
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const weeklyData = @json($chartData);
+    const monthlyData = @json($monthlyChartData);
+    let currentMode = 'weekly';
+    let chartInstance = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        
+        // Buat gradien untuk bar
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, '#5d4037'); // primary-container
+        gradient.addColorStop(1, '#ffdbd0'); // primary-fixed
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: weeklyData.map(d => d.label),
+                datasets: [
+                    {
+                        type: 'line',
+                        label: 'Total Keseluruhan',
+                        data: weeklyData.map(d => d.total_value),
+                        borderColor: '#5d4037', // primary
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#5d4037',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Penjualan',
+                        data: weeklyData.map(d => d.sales_value),
+                        backgroundColor: '#8d6e63', // slightly lighter brown
+                        borderRadius: {topLeft: 0, topRight: 0, bottomLeft: 4, bottomRight: 4},
+                        barPercentage: 0.5,
+                        stack: 'Stack 0',
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Proyek',
+                        data: weeklyData.map(d => d.project_value),
+                        backgroundColor: '#d7ccc8', // light brown
+                        borderRadius: {topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0},
+                        barPercentage: 0.5,
+                        stack: 'Stack 0',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1a1c1c', // on-surface
+                        titleColor: '#ffffff',
+                        bodyColor: '#e2e2e2',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e8e8e7', // outline-variant/20
+                            borderDash: [5, 5]
+                        },
+                        ticks: {
+                            color: '#504441', // on-surface-variant
+                            font: { family: 'Work Sans', weight: '500' },
+                            callback: function(value) {
+                                if (value >= 1000000) {
+                                    return 'Rp ' + (value / 1000000).toFixed(1) + 'M';
+                                } else if (value >= 1000) {
+                                    return 'Rp ' + (value / 1000).toFixed(0) + 'K';
+                                }
+                                return 'Rp ' + value;
+                            }
+                        },
+                        border: { display: false }
+                    },
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            color: '#504441', // on-surface-variant
+                            font: { family: 'Work Sans', weight: 'bold' }
+                        },
+                        border: { display: false }
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+            }
+        });
+    });
+
+    function switchChart(mode) {
+        if (mode === currentMode || !chartInstance) return;
+        currentMode = mode;
+
+        const btnWeekly = document.getElementById('btnWeekly');
+        const btnMonthly = document.getElementById('btnMonthly');
+
+        let targetData = mode === 'weekly' ? weeklyData : monthlyData;
+
+        if (mode === 'weekly') {
+            btnWeekly.className = 'px-3 py-1 bg-surface-container rounded-full cursor-pointer hover:bg-surface-container-high transition-colors';
+            btnMonthly.className = 'px-3 py-1 text-primary border border-primary rounded-full cursor-pointer hover:bg-primary/5 transition-colors';
+        } else {
+            btnMonthly.className = 'px-3 py-1 bg-surface-container rounded-full cursor-pointer hover:bg-surface-container-high transition-colors';
+            btnWeekly.className = 'px-3 py-1 text-primary border border-primary rounded-full cursor-pointer hover:bg-primary/5 transition-colors';
+        }
+
+        // Update data
+        chartInstance.data.labels = targetData.map(d => d.label);
+        chartInstance.data.datasets[0].data = targetData.map(d => d.total_value);
+        chartInstance.data.datasets[1].data = targetData.map(d => d.sales_value);
+        chartInstance.data.datasets[2].data = targetData.map(d => d.project_value);
+        
+        // Update Chart
+        chartInstance.update();
+    }
+</script>
+@endpush
 
 @section('modals')
 @include('components.modal-export')

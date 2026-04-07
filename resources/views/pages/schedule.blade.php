@@ -25,7 +25,7 @@
         <div class="col-span-8">
             <!-- Month Navigation -->
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-bold text-on-surface font-headline">Oktober 2023</h3>
+                <h3 class="text-2xl font-bold text-on-surface font-headline">{{ $monthLabel }}</h3>
                 <div class="flex gap-2">
                     <button class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all">
                         <span class="material-symbols-outlined text-sm">chevron_left</span>
@@ -45,32 +45,26 @@
                     @endforeach
                 </div>
                 <!-- Calendar Days -->
+                @for($week = 0; $week < 6; $week++)
                 @php
-                    $events = [
-                        5 => [['title'=>'Pertemuan Klien','color'=>'bg-blue-400']],
-                        8 => [['title'=>'Pengiriman Kayu Oak','color'=>'bg-emerald-400']],
-                        12 => [['title'=>'Deadline Set Meja Makan','color'=>'bg-primary'],['title'=>'Pengambilan Eleanor','color'=>'bg-amber-400']],
-                        15 => [['title'=>'Perawatan Bengkel','color'=>'bg-orange-400']],
-                        18 => [['title'=>'Proposal: S. Mitchell','color'=>'bg-purple-400']],
-                        20 => [['title'=>'Inspeksi Kualitas','color'=>'bg-blue-400']],
-                        24 => [['title'=>'Konsultasi Pesanan Baru','color'=>'bg-primary']],
-                        28 => [['title'=>'Pengiriman Teak','color'=>'bg-emerald-400']],
-                        30 => [['title'=>'Review Akhir Bulan','color'=>'bg-surface-container-highest text-on-surface']],
-                    ];
-                    $today = 24;
-                    $startDay = 0; // Oct 2023 starts on Sunday
-                    $daysInMonth = 31;
-                    $prevDays = [25,26,27,28,29,30]; // Sept fill
+                    $hasContent = false;
+                    for ($check = 0; $check < 7; $check++) {
+                        $cn = $week * 7 + $check + 1 - $startDay;
+                        if ($cn >= 1 && $cn <= $daysInMonth) { $hasContent = true; break; }
+                    }
                 @endphp
-
-                @for($week = 0; $week < 5; $week++)
-                <div class="grid grid-cols-7 divide-x divide-outline-variant/10 {{ $week < 4 ? 'border-b border-outline-variant/10' : '' }}">
+                @if($hasContent)
+                <div class="grid grid-cols-7 divide-x divide-outline-variant/10 {{ $week < 5 ? 'border-b border-outline-variant/10' : '' }}">
                     @for($d = 0; $d < 7; $d++)
                     @php
                         $cellNum = $week * 7 + $d + 1 - $startDay;
                         $isOtherMonth = $cellNum < 1 || $cellNum > $daysInMonth;
-                        $displayDay = $isOtherMonth ? ($cellNum < 1 ? $prevDays[count($prevDays)+$cellNum-1] ?? '' : $cellNum - $daysInMonth) : $cellNum;
-                        $isToday = !$isOtherMonth && $cellNum == $today;
+                        if ($isOtherMonth) {
+                            $displayDay = $cellNum < 1 ? $daysInPrevMonth + $cellNum : $cellNum - $daysInMonth;
+                        } else {
+                            $displayDay = $cellNum;
+                        }
+                        $isToday = !$isOtherMonth && $isCurrentMonth && $cellNum == $today;
                         $dayEvents = !$isOtherMonth ? ($events[$cellNum] ?? []) : [];
                     @endphp
                     <div class="min-h-[100px] p-2 {{ $isOtherMonth ? 'bg-surface-container-low/30' : 'hover:bg-surface-container-low/50' }} transition-colors">
@@ -85,6 +79,7 @@
                     </div>
                     @endfor
                 </div>
+                @endif
                 @endfor
             </div>
 
@@ -113,21 +108,15 @@
                 <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
                     <h4 class="text-sm font-bold text-primary mb-6">Acara Mendatang</h4>
                     <div class="space-y-4">
-                        @php $upcoming = [
-                            ['title'=>'Konsultasi Pesanan Baru','date'=>'24 Okt','time'=>'10:00','icon'=>'groups','color'=>'bg-primary/10 text-primary','client'=>'Eleanor Shellstrop'],
-                            ['title'=>'Kedatangan Pengiriman Teak','date'=>'28 Okt','time'=>'14:00','icon'=>'local_shipping','color'=>'bg-emerald-100 text-emerald-700','client'=>'Pemasok: WoodCraft Co.'],
-                            ['title'=>'Review Akhir Bulan','date'=>'30 Okt','time'=>'16:00','icon'=>'assessment','color'=>'bg-surface-container-high text-on-surface-variant','client'=>'Internal'],
-                            ['title'=>'QC Kayu Walnut','date'=>'2 Nov','time'=>'09:00','icon'=>'verified','color'=>'bg-blue-100 text-blue-700','client'=>'Julian Varkas'],
-                        ]; @endphp
                         @foreach($upcoming as $u)
                         <div class="flex items-start gap-3 p-4 bg-surface-container-low rounded-lg hover:bg-surface-container-low/80 transition-colors">
-                            <div class="w-10 h-10 rounded-full {{ $u['color'] }} flex items-center justify-center flex-shrink-0">
-                                <span class="material-symbols-outlined text-sm">{{ $u['icon'] }}</span>
+                            <div class="w-10 h-10 rounded-full {{ $u->warna_class }} flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-sm text-white">event</span>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-on-surface truncate">{{ $u['title'] }}</p>
-                                <p class="text-[10px] text-on-surface-variant">{{ $u['client'] }}</p>
-                                <p class="text-[10px] text-primary font-bold mt-1">{{ $u['date'] }} · {{ $u['time'] }}</p>
+                                <p class="text-sm font-bold text-on-surface truncate">{{ $u->judul }}</p>
+                                <p class="text-[10px] text-on-surface-variant">{{ $u->customer ? $u->customer->nama : ($u->project ? $u->project->nama : 'Internal') }}</p>
+                                <p class="text-[10px] text-primary font-bold mt-1">{{ $u->tanggal_mulai->translatedFormat('d M') }} · {{ $u->tanggal_mulai->format('H:i') }}</p>
                             </div>
                         </div>
                         @endforeach
@@ -139,12 +128,12 @@
                     <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-8xl opacity-10">calendar_month</span>
                     <div class="relative z-10">
                         <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">Bulan Ini</p>
-                        <p class="text-3xl font-black font-headline mb-4">9 Acara</p>
+                        <p class="text-3xl font-black font-headline mb-4">{{ $monthlyStats['total'] }} Acara</p>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between"><span class="opacity-70">Pengiriman</span><span class="font-bold">3</span></div>
-                            <div class="flex justify-between"><span class="opacity-70">Pertemuan</span><span class="font-bold">2</span></div>
-                            <div class="flex justify-between"><span class="opacity-70">Deadline</span><span class="font-bold">2</span></div>
-                            <div class="flex justify-between"><span class="opacity-70">Lainnya</span><span class="font-bold">2</span></div>
+                            <div class="flex justify-between"><span class="opacity-70">Pengiriman</span><span class="font-bold">{{ $monthlyStats['pengiriman'] }}</span></div>
+                            <div class="flex justify-between"><span class="opacity-70">Pertemuan</span><span class="font-bold">{{ $monthlyStats['pertemuan'] }}</span></div>
+                            <div class="flex justify-between"><span class="opacity-70">Deadline</span><span class="font-bold">{{ $monthlyStats['deadline'] }}</span></div>
+                            <div class="flex justify-between"><span class="opacity-70">Lainnya</span><span class="font-bold">{{ $monthlyStats['lainnya'] }}</span></div>
                         </div>
                     </div>
                 </div>

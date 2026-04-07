@@ -10,67 +10,65 @@
 <div class="pt-28 px-10 pb-20">
     <div class="max-w-6xl mx-auto space-y-12">
         <!-- Profile Hero Section -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-10 flex flex-col md:flex-row gap-10 items-start md:items-center relative overflow-hidden group">
-                <div class="absolute -top-12 -right-12 w-48 h-48 bg-secondary-container/20 rounded-full blur-3xl group-hover:bg-secondary-container/40 transition-colors duration-700"></div>
-                <div class="relative">
-                    <div class="w-32 h-32 md:w-40 md:h-40 rounded-xl overflow-hidden shadow-2xl rotate-3 transition-transform group-hover:rotate-0 duration-500">
-                        <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRqC-TvVYpbUEvjwJqRZACZQqEg59kTR3V3VAfb6r68ZF5SWqjVVR3yEUvrmFeHMvHwYA_KnqNgK-VMvNz3LdmhiONtmLdYBYzp8Fg04q1RKymSIgNCCMGStqeuCS-bRHdVIAiU-KtdLsN9eQXD-5FXUBAZwkwENHBnWpzReC7lIT78uDuFJuAbnh8kvhCNWThvhGsYEIDjJUquQZZ_Q3LSbDxoRX1Yp1x3L-hvrEcAyqKfeuepWBdfRtvN18SSOIGc2lltzDGI8QX"/>
-                    </div>
-                    <a class="absolute -bottom-2 -right-2 bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform" href="{{ route('profile') }}">
-                        <span class="material-symbols-outlined text-sm">edit</span>
-                    </a>
+            <form method="POST" action="{{ route('profile.update') }}" class="lg:col-span-12 space-y-12">
+                @csrf
+                @method('PUT')
+                
+                @if(session('success'))
+                <div class="p-4 bg-green-500 text-white rounded-lg font-medium shadow-sm">
+                    {{ session('success') }}
                 </div>
-                <div class="flex-1 space-y-4">
-                    <div>
-                        <h2 class="text-4xl font-extrabold text-primary tracking-tight font-headline">Elias Thorne</h2>
-                        <p class="text-on-surface-variant font-medium text-lg">Lead Carpenter & Founder</p>
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        <span class="px-4 py-1.5 bg-surface-container-high rounded-full text-xs font-bold text-on-surface-variant flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
-                            Tukang Ahli
-                        </span>
-                        <span class="px-4 py-1.5 bg-surface-container-high rounded-full text-xs font-bold text-on-surface-variant flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm">location_on</span>
-                            Portland Atelier
-                        </span>
-                    </div>
-                    <p class="text-on-surface-variant text-sm leading-relaxed max-w-md">
-                        Berdedikasi untuk melestarikan teknik pertukangan tradisional sambil mengintegrasikan estetika desain modern ke dalam setiap karya khusus.
-                    </p>
+                @endif
+                @if($errors->any())
+                <div class="p-4 bg-red-500 text-white rounded-lg font-medium shadow-sm">
+                    {{ $errors->first() }}
                 </div>
-            </div>
-            <div class="lg:col-span-4 grid grid-rows-2 gap-8">
-                <div class="bg-primary text-white rounded-xl p-8 flex flex-col justify-between relative overflow-hidden">
-                    <span class="material-symbols-outlined opacity-20 absolute -right-4 -bottom-4 text-9xl">handyman</span>
-                    <div class="relative">
-                        <p class="text-xs uppercase tracking-[0.2em] font-bold opacity-80">Total Proyek</p>
-                        <p class="text-4xl font-black font-headline mt-1">142</p>
-                    </div>
-                    <div class="relative flex items-center gap-2 text-xs font-medium">
-                        <span class="material-symbols-outlined text-sm">trending_up</span>
-                        12 selesai bulan ini
-                    </div>
-                </div>
-                <div class="bg-secondary-container text-on-secondary-container rounded-xl p-8 flex flex-col justify-between">
-                    <div>
-                        <p class="text-xs uppercase tracking-[0.2em] font-bold opacity-80">Rating Pelanggan</p>
-                        <p class="text-4xl font-black font-headline mt-1">4.9<span class="text-lg opacity-50">/5</span></p>
-                    </div>
-                    <div class="flex -space-x-2">
-                        <div class="w-8 h-8 rounded-full border-2 border-secondary-container bg-surface-container-highest"></div>
-                        <div class="w-8 h-8 rounded-full border-2 border-secondary-container bg-surface-container-highest"></div>
-                        <div class="w-8 h-8 rounded-full border-2 border-secondary-container bg-surface-container-highest"></div>
-                        <div class="w-8 h-8 rounded-full border-2 border-secondary-container bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">+28</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+                @endif
 
-        <!-- Settings Modules -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div class="space-y-8">
+                <div class="bg-surface-container-lowest rounded-xl p-10 flex flex-col items-start relative overflow-hidden group">
+                    <div class="absolute -top-12 -right-12 w-48 h-48 bg-secondary-container/20 rounded-full blur-3xl group-hover:bg-secondary-container/40 transition-colors duration-700"></div>
+                    <div class="flex items-center gap-6 mb-8 relative w-full">
+                        <div class="relative">
+                            <div class="w-32 h-32 rounded-xl overflow-hidden shadow-2xl bg-primary/20 flex items-center justify-center">
+                                @if($user->avatar)
+                                    <img class="w-full h-full object-cover" src="{{ $user->avatar }}"/>
+                                @else
+                                    <span class="text-white text-6xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="flex-1 space-y-2">
+                            <h2 class="text-3xl font-extrabold text-primary tracking-tight font-headline">Ubah Profil</h2>
+                            <p class="text-on-surface-variant font-medium">Perbarui informasi profil dan kontak Anda.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-on-surface flex gap-1">Nama Lengkap <span class="text-error">*</span></label>
+                            <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary transition-all font-body font-medium" name="name" required type="text" value="{{ old('name', $user->name) }}"/>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-on-surface flex gap-1">Email <span class="text-error">*</span></label>
+                            <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary transition-all font-body font-medium" name="email" required type="email" value="{{ old('email', $user->email) }}"/>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-on-surface flex gap-1">Jabatan</label>
+                            <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary transition-all font-body font-medium" name="jabatan" type="text" value="{{ old('jabatan', $user->jabatan) }}"/>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-on-surface flex gap-1">No. Telepon</label>
+                            <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary transition-all font-body font-medium" name="telepon" type="text" value="{{ old('telepon', $user->telepon) }}"/>
+                        </div>
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-sm font-semibold text-on-surface flex gap-1">URL Avatar (Profil Foto)</label>
+                            <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary transition-all font-body font-medium" name="avatar_url" type="url" value="{{ old('avatar_url', $user->avatar) }}" placeholder="https://example.com/avatar.png"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Modules -->
+                <div class="grid grid-cols-1 gap-12">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-8 bg-surface-container-lowest rounded-xl">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary">
                         <span class="material-symbols-outlined">business_center</span>
@@ -134,6 +132,46 @@
             </div>
         </section>
 
+        <!-- Change Password Section -->
+        <section class="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant/10">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined">lock</span>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold font-headline text-primary">Ubah Password</h3>
+                    <p class="text-sm text-on-surface-variant">Perbarui password akun Anda untuk keamanan.</p>
+                </div>
+            </div>
+            <form method="POST" action="{{ route('settings.password') }}" class="space-y-6 max-w-lg">
+                @csrf
+                @method('PUT')
+                @if($errors->has('current_password'))
+                <div class="p-4 bg-error-container text-on-error-container rounded-lg text-sm">
+                    {{ $errors->first('current_password') }}
+                </div>
+                @endif
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-on-surface flex gap-1">Password Saat Ini <span class="text-error">*</span></label>
+                    <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary transition-all font-body font-medium" name="current_password" required type="password" placeholder="Masukkan password saat ini"/>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-on-surface flex gap-1">Password Baru <span class="text-error">*</span></label>
+                    <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary transition-all font-body font-medium" name="password" required type="password" minlength="8" placeholder="Minimal 8 karakter"/>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-on-surface flex gap-1">Konfirmasi Password Baru <span class="text-error">*</span></label>
+                    <input class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary transition-all font-body font-medium" name="password_confirmation" required type="password" minlength="8" placeholder="Ulangi password baru"/>
+                </div>
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-transform flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">lock_reset</span>
+                        Ubah Password
+                    </button>
+                </div>
+            </form>
+        </section>
+
         <!-- Danger Zone -->
         <section class="bg-error-container/20 rounded-xl p-8 border border-error/10">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -141,12 +179,13 @@
                     <h3 class="text-lg font-black text-error font-headline">Zona Berbahaya</h3>
                     <p class="text-sm text-on-surface-variant">Kelola penghapusan akun atau penutupan bengkel permanen.</p>
                 </div>
-                <div class="flex gap-4">
-                    <button class="px-6 py-2.5 rounded-full text-error font-bold text-sm border border-error/30 hover:bg-error hover:text-white transition-all">Nonaktifkan Akun</button>
-                    <button class="px-6 py-2.5 rounded-full bg-primary text-white font-bold text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-transform">Simpan Semua Perubahan</button>
+                        <div class="flex gap-4">
+                            <a href="{{ route('profile') }}" class="px-6 py-2.5 rounded-full text-on-surface font-bold text-sm border border-outline-variant hover:bg-surface-container-high transition-all">Batal</a>
+                            <button type="submit" class="px-6 py-2.5 rounded-full bg-primary text-white font-bold text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-transform">Simpan Semua Perubahan</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </form>
     </div>
 </div>
 @endsection
