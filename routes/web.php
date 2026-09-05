@@ -9,6 +9,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,13 @@ use Illuminate\Support\Facades\Route;
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// Public Review Routes
+Route::prefix('review')->name('review.')->group(function () {
+    Route::get('/{identifier}', [ReviewController::class, 'show'])->name('show');
+    Route::post('/{identifier}', [ReviewController::class, 'submit'])->name('submit');
+    Route::get('/{identifier}/done', [ReviewController::class, 'done'])->name('done');
+})->middleware('throttle:30,1');
 
 // Login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -45,7 +53,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/create', [SalesController::class, 'create'])->name('orders.create');
     Route::post('/orders', [SalesController::class, 'store'])->name('orders.store');
     Route::get('/sales/{id}', [SalesController::class, 'show'])->name('sales.show');
-    Route::post('/sales/{id}/feedback', [SalesController::class, 'saveFeedback'])->name('sales.feedback');
     Route::get('/orders/{id}/edit', [SalesController::class, 'edit'])->name('orders.edit');
     Route::put('/orders/{id}', [SalesController::class, 'update'])->name('orders.update');
     Route::delete('/orders/{id}', [SalesController::class, 'destroy'])->name('orders.destroy');
@@ -73,7 +80,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::get('/projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
-    Route::post('/projects/{id}/feedback', [ProjectController::class, 'saveFeedback'])->name('projects.feedback');
     Route::get('/projects/{id}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
     Route::put('/projects/{id}', [ProjectController::class, 'update'])->name('projects.update');
     Route::delete('/projects/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');

@@ -288,14 +288,4 @@ class SalesController extends Controller
             ->route('sales')
             ->with('success', 'Pesanan #'.$nomorFaktur.' berhasil dihapus!');
     }
-
-    public function saveFeedback(Request $request, $id)
-    {
-        $order = Order::findOrFail($id);
-        $order->update([
-            'rating' => $request->rating,
-            'keluhan_masukan' => $request->keluhan_masukan,
-        ]);
-        return redirect()->route('sales.show', $id)->with('success', 'Penilaian berhasil disimpan.');
-    }
 }

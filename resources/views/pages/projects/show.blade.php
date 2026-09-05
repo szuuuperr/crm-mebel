@@ -109,31 +109,7 @@
             @endif
 
             <!-- Feedback -->
-            @if($project->status === 'selesai' && !$project->rating && !$project->keluhan_masukan)
-            <div class="bg-primary/5 rounded-xl p-8 border border-primary/20">
-                <h3 class="text-xl font-bold text-primary mb-2">Beri Penilaian Proyek</h3>
-                <p class="text-sm text-on-surface-variant mb-6">Bagaimana hasil dari proyek ini? Keluhan dan masukan Anda sangat berarti bagi kami.</p>
-                <form action="{{ route('projects.feedback', $project->id) }}" method="POST" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label class="block text-xs font-bold text-outline uppercase tracking-widest mb-2">Rating</label>
-                        <select name="rating" required class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary-container text-on-surface font-medium text-sm">
-                            <option value="">Pilih Rating...</option>
-                            <option value="5">⭐⭐⭐⭐⭐ (Sangat Puas)</option>
-                            <option value="4">⭐⭐⭐⭐ (Puas)</option>
-                            <option value="3">⭐⭐⭐ (Cukup)</option>
-                            <option value="2">⭐⭐ (Kurang)</option>
-                            <option value="1">⭐ (Sangat Kurang)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-outline uppercase tracking-widest mb-2">Keluhan / Masukan</label>
-                        <textarea name="keluhan_masukan" rows="3" required class="w-full px-4 py-3 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary-container text-on-surface font-medium text-sm" placeholder="Tuliskan pengalaman atau kendala yang dialami..."></textarea>
-                    </div>
-                    <button type="submit" class="px-6 py-3 bg-primary text-on-primary font-bold rounded-full hover:scale-[1.02] transition-all">Simpan Penilaian</button>
-                </form>
-            </div>
-            @elseif($project->rating || $project->keluhan_masukan)
+            @if($project->rating || $project->keluhan_masukan)
             <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
                 <h3 class="text-xl font-bold text-primary mb-4">Penilaian Proyek</h3>
                 @if($project->rating)
@@ -148,6 +124,13 @@
                     <p class="text-on-surface-variant italic">"{{ $project->keluhan_masukan }}"</p>
                 </div>
                 @endif
+            </div>
+            @endif
+
+            <!-- Share Review -->
+            @if($project->status === 'selesai')
+            <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/30">
+                <x-share-buttons :reviewable="$project" />
             </div>
             @endif
         </div>

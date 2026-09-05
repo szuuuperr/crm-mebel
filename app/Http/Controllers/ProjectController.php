@@ -100,7 +100,7 @@ class ProjectController extends Controller
             'target_selesai' => 'nullable|date',
             'deskripsi' => 'nullable|string',
             'kebutuhan_khusus' => 'nullable|string',
-            'jenis_kayu_id' => 'nullable|exists:jenis_kayus,id',
+            'jenis_kayu_id' => 'nullable|exists:wood_types,id',
             'finishing' => 'nullable|string|max:255',
             'panjang' => 'nullable|numeric|min:0',
             'lebar' => 'nullable|numeric|min:0',
@@ -192,7 +192,7 @@ class ProjectController extends Controller
             'kebutuhan_khusus' => 'nullable|string',
             'status' => 'required|string',
             'progress' => 'required|integer|min:0|max:100',
-            'jenis_kayu_id' => 'nullable|exists:jenis_kayus,id',
+            'jenis_kayu_id' => 'nullable|exists:wood_types,id',
             'finishing' => 'nullable|string|max:255',
             'panjang' => 'nullable|numeric|min:0',
             'lebar' => 'nullable|numeric|min:0',
@@ -246,16 +246,5 @@ class ProjectController extends Controller
         $project->delete();
 
         return redirect()->route('projects.index')->with('success', 'Proyek berhasil dihapus!');
-    }
-
-    public function saveFeedback(Request $request, $id)
-    {
-        $project = Project::findOrFail($id);
-        $project->update([
-            'rating' => $request->rating,
-            'keluhan_masukan' => $request->keluhan_masukan,
-        ]);
-
-        return redirect()->route('projects.show', $id)->with('success', 'Penilaian berhasil disimpan.');
     }
 }
