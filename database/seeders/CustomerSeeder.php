@@ -9,7 +9,7 @@ class CustomerSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('customers')->insert([
+        $customers = [
             [
                 'nama' => 'Dewi Anggraini',
                 'email' => 'dewi.anggraini@gmail.com',
@@ -85,6 +85,20 @@ class CustomerSeeder extends Seeder
                 'created_at' => now()->subMonths(2),
                 'updated_at' => now(),
             ],
-        ]);
+        ];
+
+        foreach ($customers as $data) {
+            $user_id = DB::table('users')->insertGetId([
+                'name' => $data['nama'],
+                'email' => $data['email'],
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'pelanggan',
+                'created_at' => $data['created_at'],
+                'updated_at' => $data['updated_at'],
+            ]);
+
+            $data['user_id'] = $user_id;
+            DB::table('customers')->insert($data);
+        }
     }
 }

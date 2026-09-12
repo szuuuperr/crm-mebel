@@ -69,47 +69,5 @@ class Project extends Model
         };
     }
 
-    public function getReviewUrlAttribute()
-    {
-        return route('review.show', $this->nomor_faktur);
-    }
-
-    public function getReviewShareMessageAttribute()
-    {
-        $customerName = $this->customer->nama ?? 'Bapak/Ibu';
-
-        return "Halo {$customerName},\n\n"
-            ."Terima kasih telah mempercayakan Proyek #{$this->nomor_faktur} ke kami.\n"
-            ."Kami sangat menghargai masukan Anda!\n\n"
-            ."Beri penilaian Anda di:\n{$this->review_url}\n\n"
-            ."Salam,\nTim CRM Mebel";
-    }
-
-    public function getReviewWhatsappUrlAttribute()
-    {
-        $message = rawurlencode($this->review_share_message);
-        $phone = $this->customer->telepon ?? null;
-
-        if ($phone) {
-            $phone = preg_replace('/[^0-9]/', '', $phone);
-            if (! str_starts_with($phone, '62')) {
-                $phone = '62'.ltrim($phone, '0');
-            }
-
-            return "https://wa.me/{$phone}?text={$message}";
-        }
-
-        return "https://wa.me/?text={$message}";
-    }
-
-    public function getReviewEmailUrlAttribute()
-    {
-        $customerEmail = $this->customer->email ?? '';
-        $subject = rawurlencode("Mohon Penilaian Proyek #{$this->nomor_faktur}");
-        $body = rawurlencode($this->review_share_message);
-
-        $to = $customerEmail ? rawurlencode($customerEmail) : '';
-
-        return "mailto:{$to}?subject={$subject}&body={$body}";
-    }
 }
+

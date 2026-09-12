@@ -9,9 +9,9 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        // If already logged in, redirect to dashboard
+        // If already logged in, redirect based on role
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            return $this->redirectByRole(Auth::user());
         }
         
         return view('pages.login');
@@ -29,6 +29,12 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
+            $user = Auth::user();
+
+            if ($user->isPelanggan()) {
+                return redirect()->intended(route('pelanggan.dashboard'))->with('success', 'Selamat datang kembali!');
+            }
+
             return redirect()->intended(route('dashboard'))->with('success', 'Selamat datang kembali!');
         }
 
@@ -45,5 +51,14 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->with('success', 'Anda telah berhasil keluar.');
+    }
+
+    protected function redirectByRole($user)
+    {
+        if ($user->isPelanggan()) {
+            return redirect()->route('pelanggan.dashboard');
+        }
+
+        return redirect()->route('dashboard');
     }
 }

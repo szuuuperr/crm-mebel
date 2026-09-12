@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerController extends Controller
 {
@@ -50,6 +52,7 @@ class CustomerController extends Controller
                 'telepon' => $c->telepon,
                 'status_loyalitas' => $c->status_loyalitas,
                 'orders_count' => $c->orders_count,
+                'has_account' => $c->user_id !== null,
                 'orders' => $c->orders->sortByDesc('tanggal_pesanan')->take(3)->map(function ($o) {
                     return [
                         'id' => $o->id,
@@ -78,11 +81,11 @@ class CustomerController extends Controller
     }
 
     /**
-     * Store — Simpan pelanggan baru
+     * Store — Simpan pelanggan baru + buat akun login jika diminta
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'nama' => 'required|string|max:255',
             'email' => 'nullable|email|unique:customers,email',
             'telepon' => 'nullable|string|max:20',
@@ -94,22 +97,44 @@ class CustomerController extends Controller
             'kode_pos' => 'nullable|string|max:10',
             'status_loyalitas' => 'required|in:baru,reguler,vip',
             'catatan' => 'nullable|string',
-        ]);
+        ];
 
-        $customer = Customer::create($request->only([
+        // Validasi akun login jika checkbox aktif
+        if ($request->has('buat_akun')) {
+            $rules['akun_email'] = 'required|email|unique:users,email';
+            $rules['akun_password'] = 'required|string|min:8';
+        }
+
+        $request->validate($rules);
+
+        $customerData = $request->only([
             'nama', 'email', 'telepon', 'perusahaan', 'jabatan',
             'alamat', 'kota', 'provinsi', 'kode_pos',
             'status_loyalitas', 'catatan',
-        ]));
+        ]);
+
+        // Buat akun user jika diminta
+        if ($request->has('buat_akun')) {
+            $user = User::create([
+                'name' => $request->nama,
+                'email' => $request->akun_email,
+                'password' => Hash::make($request->akun_password),
+                'role' => 'pelanggan',
+            ]);
+            $customerData['user_id'] = $user->id;
+        }
+
+        $customer = Customer::create($customerData);
 
         return redirect()
             ->route('clients.show', $customer->id)
-            ->with('success', 'Pelanggan "'.$customer->nama.'" berhasil ditambahkan!');
+            ->with('success', 'Pelanggan "'.$customer->nama.'" berhasil ditambahkan!'
+                .($request->has('buat_akun') ? ' Akun login telah dibuat.' : ''));
     }
 
     public function show($id)
     {
-        $customer = Customer::with(['orders.items.product', 'projects'])->findOrFail($id);
+        $customer = Customer::with(['orders.items.product', 'projects', 'user'])->findOrFail($id);
 
         // Hitung total nilai seumur hidup
         $lifetimeValue = $customer->orders->sum('total');
@@ -123,7 +148,7 @@ class CustomerController extends Controller
 
     public function edit($id)
     {
-        $customer = Customer::with(['orders.items.product'])->findOrFail($id);
+        $customer = Customer::with(['orders.items.product', 'user'])->findOrFail($id);
 
         // Hitung total nilai seumur hidup
         $lifetimeValue = $customer->orders->sum('total');
@@ -136,13 +161,13 @@ class CustomerController extends Controller
     }
 
     /**
-     * Update — Update pelanggan
+     * Update — Update pelanggan + kelola akun login
      */
     public function update(Request $request, $id)
     {
         $customer = Customer::findOrFail($id);
 
-        $request->validate([
+        $rules = [
             'nama' => 'required|string|max:255',
             'email' => 'nullable|email|unique:customers,email,'.$id,
             'telepon' => 'nullable|string|max:20',
@@ -154,13 +179,44 @@ class CustomerController extends Controller
             'kode_pos' => 'nullable|string|max:10',
             'status_loyalitas' => 'required|in:baru,reguler,vip',
             'catatan' => 'nullable|string',
-        ]);
+        ];
+
+        // Jika belum punya akun dan ingin buat
+        if ($request->has('buat_akun') && !$customer->user_id) {
+            $rules['akun_email'] = 'required|email|unique:users,email';
+            $rules['akun_password'] = 'required|string|min:8';
+        }
+
+        // Jika sudah punya akun dan ingin update password
+        if ($request->filled('akun_password_baru') && $customer->user_id) {
+            $rules['akun_password_baru'] = 'string|min:8';
+        }
+
+        $request->validate($rules);
 
         $customer->update($request->only([
             'nama', 'email', 'telepon', 'perusahaan', 'jabatan',
             'alamat', 'kota', 'provinsi', 'kode_pos',
             'status_loyalitas', 'catatan',
         ]));
+
+        // Buat akun baru jika diminta dan belum ada
+        if ($request->has('buat_akun') && !$customer->user_id) {
+            $user = User::create([
+                'name' => $customer->nama,
+                'email' => $request->akun_email,
+                'password' => Hash::make($request->akun_password),
+                'role' => 'pelanggan',
+            ]);
+            $customer->update(['user_id' => $user->id]);
+        }
+
+        // Update password akun yang sudah ada
+        if ($request->filled('akun_password_baru') && $customer->user_id) {
+            $customer->user->update([
+                'password' => Hash::make($request->akun_password_baru),
+            ]);
+        }
 
         return redirect()
             ->route('clients.show', $customer->id)

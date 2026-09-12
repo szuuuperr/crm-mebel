@@ -174,9 +174,51 @@
                             </label>
                         </div>
                     </div>
+
+                    <!-- Akun Login Pelanggan -->
+                    <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-primary">person</span>
+                            <h4 class="text-sm font-bold text-primary">Akun Login Portal Pelanggan</h4>
+                        </div>
+                        <p class="text-xs text-on-surface-variant mb-4">Buat akun agar pelanggan dapat login ke portal untuk melihat pesanan, proyek, dan memberikan ulasan.</p>
+
+                        <label class="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg cursor-pointer hover:bg-primary/5 transition-colors mb-4">
+                            <input type="checkbox" name="buat_akun" id="buatAkunCheckbox" {{ old('buat_akun') ? 'checked' : '' }} class="text-primary focus:ring-primary rounded" onchange="toggleAkunFields()" />
+                            <div>
+                                <p class="text-sm font-bold text-on-surface">Buatkan Akun Login</p>
+                                <p class="text-[10px] text-on-surface-variant">Pelanggan akan dapat login ke portal pelanggan</p>
+                            </div>
+                        </label>
+
+                        <div id="akunFields" class="{{ old('buat_akun') ? '' : 'hidden' }} space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-on-surface-variant mb-2">Email Login <span class="text-error">*</span></label>
+                                <input type="email" name="akun_email" value="{{ old('akun_email') }}" placeholder="email@pelanggan.com"
+                                    class="w-full bg-surface-container-low rounded-lg px-4 py-3 text-sm border-none focus:ring-2 focus:ring-primary" />
+                                @error('akun_email') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-on-surface-variant mb-2">Password <span class="text-error">*</span></label>
+                                <input type="password" name="akun_password" placeholder="Minimal 8 karakter"
+                                    class="w-full bg-surface-container-low rounded-lg px-4 py-3 text-sm border-none focus:ring-2 focus:ring-primary" />
+                                @error('akun_password') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+    function toggleAkunFields() {
+        const checkbox = document.getElementById('buatAkunCheckbox');
+        const fields = document.getElementById('akunFields');
+        fields.classList.toggle('hidden', !checkbox.checked);
+    }
+</script>
+@endpush
 @endsection

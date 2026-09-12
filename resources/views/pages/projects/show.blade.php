@@ -127,10 +127,17 @@
             </div>
             @endif
 
-            <!-- Share Review -->
-            @if($project->status === 'selesai')
+            <!-- Info Ulasan Pelanggan -->
+            @if($project->status === 'selesai' && empty($project->rating))
             <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/30">
-                <x-share-buttons :reviewable="$project" />
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="material-symbols-outlined text-primary text-lg">rate_review</span>
+                    <h3 class="text-sm font-bold text-primary">Ulasan Pelanggan</h3>
+                </div>
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                    Pelanggan dapat memberikan ulasan melalui <span class="font-bold">Portal Pelanggan</span> setelah login dengan akun mereka.
+                    Pastikan pelanggan sudah memiliki akun login di halaman edit pelanggan.
+                </p>
             </div>
             @endif
         </div>

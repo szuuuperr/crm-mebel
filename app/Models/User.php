@@ -52,6 +52,11 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function customer()
+    {
+        return $this->hasOne(Customer::class);
+    }
+
     public function projectMembers()
     {
         return $this->hasMany(ProjectMember::class);
@@ -65,5 +70,20 @@ class User extends Authenticatable
     public function schedules()
     {
         return $this->hasMany(Schedule::class);
+    }
+
+    public function isPelanggan(): bool
+    {
+        return $this->role === 'pelanggan';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isStaff(): bool
+    {
+        return in_array($this->role, ['admin', 'pengrajin', 'manajer']);
     }
 }

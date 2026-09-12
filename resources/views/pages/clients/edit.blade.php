@@ -218,6 +218,57 @@
                         </div>
                     </div>
 
+                    <!-- Akun Login Pelanggan -->
+                    <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="material-symbols-outlined text-primary">person</span>
+                            <h4 class="text-sm font-bold text-primary">Akun Login Portal Pelanggan</h4>
+                        </div>
+
+                        @if($customer->user_id && $customer->user)
+                            {{-- Sudah punya akun --}}
+                            <div class="p-4 bg-emerald-50 rounded-lg mb-4">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+                                    <p class="text-sm font-bold text-emerald-800">Akun Aktif</p>
+                                </div>
+                                <p class="text-xs text-on-surface-variant">Email login: <span class="font-bold">{{ $customer->user->email }}</span></p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-on-surface-variant mb-2">Ganti Password (opsional)</label>
+                                <input type="password" name="akun_password_baru" placeholder="Kosongkan jika tidak ingin mengganti"
+                                    class="w-full bg-surface-container-low rounded-lg px-4 py-3 text-sm border-none focus:ring-2 focus:ring-primary" />
+                                @error('akun_password_baru') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        @else
+                            {{-- Belum punya akun --}}
+                            <p class="text-xs text-on-surface-variant mb-4">Buat akun agar pelanggan dapat login ke portal untuk melihat pesanan, proyek, dan memberikan ulasan.</p>
+
+                            <label class="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg cursor-pointer hover:bg-primary/5 transition-colors mb-4">
+                                <input type="checkbox" name="buat_akun" id="buatAkunCheckbox" {{ old('buat_akun') ? 'checked' : '' }} class="text-primary focus:ring-primary rounded" onchange="toggleAkunFields()" />
+                                <div>
+                                    <p class="text-sm font-bold text-on-surface">Buatkan Akun Login</p>
+                                    <p class="text-[10px] text-on-surface-variant">Pelanggan akan dapat login ke portal pelanggan</p>
+                                </div>
+                            </label>
+
+                            <div id="akunFields" class="{{ old('buat_akun') ? '' : 'hidden' }} space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-on-surface-variant mb-2">Email Login <span class="text-error">*</span></label>
+                                    <input type="email" name="akun_email" value="{{ old('akun_email', $customer->email) }}" placeholder="email@pelanggan.com"
+                                        class="w-full bg-surface-container-low rounded-lg px-4 py-3 text-sm border-none focus:ring-2 focus:ring-primary" />
+                                    @error('akun_email') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-on-surface-variant mb-2">Password <span class="text-error">*</span></label>
+                                    <input type="password" name="akun_password" placeholder="Minimal 8 karakter"
+                                        class="w-full bg-surface-container-low rounded-lg px-4 py-3 text-sm border-none focus:ring-2 focus:ring-primary" />
+                                    @error('akun_password') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
                     <!-- Danger Zone -->
                     <div class="bg-error-container/20 rounded-xl p-6 border border-error/10">
                         <h4 class="text-sm font-black text-error mb-2">Zona Berbahaya</h4>
@@ -243,6 +294,14 @@
     function deleteCustomer() {
         if (confirm('Yakin ingin menghapus pelanggan "{{ $customer->nama }}"? Tindakan ini tidak dapat dibatalkan.')) {
             document.getElementById('deleteForm').submit();
+        }
+    }
+
+    function toggleAkunFields() {
+        const checkbox = document.getElementById('buatAkunCheckbox');
+        const fields = document.getElementById('akunFields');
+        if (checkbox && fields) {
+            fields.classList.toggle('hidden', !checkbox.checked);
         }
     }
 </script>

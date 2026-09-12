@@ -10,10 +10,15 @@ class Customer extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'nama', 'email', 'telepon', 'perusahaan', 'jabatan',
+        'user_id', 'nama', 'email', 'telepon', 'perusahaan', 'jabatan',
         'alamat', 'kota', 'provinsi', 'kode_pos',
         'status_loyalitas', 'avatar', 'catatan',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function orders()
     {

@@ -9,9 +9,13 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\Pelanggan\DashboardController as PelangganDashboardController;
+use App\Http\Controllers\Pelanggan\KatalogController;
+use App\Http\Controllers\Pelanggan\PesananController;
+use App\Http\Controllers\Pelanggan\ProyekController;
+use App\Http\Controllers\Pelanggan\UlasanController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,20 +24,36 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Public Review Routes
-Route::prefix('review')->name('review.')->group(function () {
-    Route::get('/{identifier}', [ReviewController::class, 'show'])->name('show');
-    Route::post('/{identifier}', [ReviewController::class, 'submit'])->name('submit');
-    Route::get('/{identifier}/done', [ReviewController::class, 'done'])->name('done');
-})->middleware('throttle:30,1');
-
 // Login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Protected Routes
-Route::middleware(['auth'])->group(function () {
+// ─── Pelanggan Routes ───────────────────────────────────────────────
+Route::middleware(['auth', 'role:pelanggan'])->prefix('pelanggan')->name('pelanggan.')->group(function () {
+    // Dashboard
+    Route::get('/', [PelangganDashboardController::class, 'index'])->name('dashboard');
+
+    // Katalog Produk (read-only)
+    Route::get('/katalog', [KatalogController::class, 'index'])->name('katalog.index');
+    Route::get('/katalog/{id}', [KatalogController::class, 'show'])->name('katalog.show');
+
+    // Pesanan Saya
+    Route::get('/pesanan', [PesananController::class, 'index'])->name('pesanan.index');
+    Route::get('/pesanan/{id}', [PesananController::class, 'show'])->name('pesanan.show');
+
+    // Proyek Saya
+    Route::get('/proyek', [ProyekController::class, 'index'])->name('proyek.index');
+    Route::get('/proyek/{id}', [ProyekController::class, 'show'])->name('proyek.show');
+
+    // Ulasan
+    Route::get('/ulasan', [UlasanController::class, 'index'])->name('ulasan.index');
+    Route::get('/ulasan/{type}/{id}', [UlasanController::class, 'create'])->name('ulasan.create');
+    Route::post('/ulasan/{type}/{id}', [UlasanController::class, 'store'])->name('ulasan.store');
+});
+
+// ─── Admin/Staff Routes ─────────────────────────────────────────────
+Route::middleware(['auth', 'role:admin,pengrajin,manajer'])->group(function () {
     // Dashboard (home)
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/search', [DashboardController::class, 'search'])->name('search');
